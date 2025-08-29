@@ -1,6 +1,6 @@
 using OrderService.Application;
 using OrderService.Infrastructure;
-using OrderService.Api.Infrastructure.Logging;
+using OrderSystem.Infra.Logging.Logging;
 using OrderService.Api.Infrastructure.Extensions;
 using DbInitializationExtension = OrderService.Infrastructure.ServiceCollectionExtensions;
 
@@ -29,7 +29,7 @@ public class Program
         builder.Services.AddMediatR(cfg => cfg.RegisterServicesFromAssembly(typeof(OrderApplicationDummyClass).Assembly));
 
         var app = builder.Build();
-        app.UseOrderSystemLogging();
+        app.UseOrdersSystemLogging();
 
         // Configure the HTTP request pipeline.
         if (app.Environment.IsDevelopment())
