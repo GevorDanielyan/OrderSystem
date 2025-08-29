@@ -1,25 +1,25 @@
-<Project Sdk="Microsoft.NET.Sdk.Web">
+<Project Sdk="Microsoft.NET.Sdk.Worker">
 
   <PropertyGroup>
     <TargetFramework>net8.0</TargetFramework>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
-    <UserSecretsId>197e2851-5f3f-43bb-a73c-f2a9bd1497a1</UserSecretsId>
+    <UserSecretsId>dotnet-OrderSystem.PaymentService-4381dc11-4e3f-457c-86eb-b6ae718d62b1</UserSecretsId>
     <DockerDefaultTargetOS>Linux</DockerDefaultTargetOS>
     <DockerfileContext>..\..</DockerfileContext>
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="Microsoft.Extensions.Diagnostics.HealthChecks" Version="9.0.8" />
+    <PackageReference Include="Microsoft.Extensions.Hosting" Version="9.0.8" />
     <PackageReference Include="Microsoft.VisualStudio.Azure.Containers.Tools.Targets" Version="1.22.1" />
     <PackageReference Include="Serilog.AspNetCore" Version="9.0.0" />
-    <PackageReference Include="Swashbuckle.AspNetCore" Version="6.6.2" />
+    <PackageReference Include="Serilog.Sinks.Seq" Version="9.0.0" />
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\OrderService.Application\OrderService.Application.csproj" />
-    <ProjectReference Include="..\OrderService.Infrastructure\OrderService.Infrastructure.csproj" />
-    <ProjectReference Include="..\OrderSystem.Infra.Contracts\OrderSystem.Infra.Contracts.csproj" />
+    <ProjectReference Include="..\OrderSystem.BusContracts\OrderSystem.BusContracts.csproj" />
     <ProjectReference Include="..\OrderSystem.Infra.Logging\OrderSystem.Infra.Logging.csproj" />
+    <ProjectReference Include="..\OrderSystem.MessageBus\OrderSystem.MessageBus.csproj" />
   </ItemGroup>
-
 </Project>
