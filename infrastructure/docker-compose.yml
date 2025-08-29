@@ -19,7 +19,7 @@ services:
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
       - ConnectionStrings__DefaultConnection=Host=postgres;Port=5432;Database=ordersdb;Username=${DB_USER};Password=${DB_PASSWORD}
-      - BusConnection__HostName=rabbitmq
+      - BusConnection__HostName=host.docker.internal
       - BusConnection__User=guest
       - BusConnection__Password=guest
     env_file:
@@ -46,7 +46,34 @@ services:
       seq:
         condition: service_started
     environment:
-      - BusConnection__HostName=rabbitmq
+      - BusConnection__HostName=host.docker.internal
+      - BusConnection__User=guest
+      - BusConnection__Password=guest
+    env_file:
+      - dev.env
+    volumes:
+      - ./logs:/app/logs
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - app-network
+
+  notification-service:
+    build:
+      context: ../
+      dockerfile: src/OrderSystem.NotificationService/Dockerfile
+    ports:
+      - "5003:8080"
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+      seq:
+        condition: service_started
+    environment:
+      - BusConnection__HostName=host.docker.internal
       - BusConnection__User=guest
       - BusConnection__Password=guest
     env_file:
