@@ -1,0 +1,96 @@
+networks:
+  app-network:
+    driver: bridge
+services:
+  order-service:
+    build:
+      context: ../
+      dockerfile: src/OrderService.Api/Dockerfile
+    ports:
+      - "5000:8080"
+      - "5001:8081"  # For HTTPS if needed
+    depends_on:
+      postgres:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+      seq:
+        condition: service_healthy
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ConnectionStrings__DefaultConnection=Host=postgres;Port=5432;Database=ordersdb;Username=${DB_USER};Password=${DB_PASSWORD}
+      - BusConnection__HostName=rabbitmq
+      - BusConnection__User=guest
+      - BusConnection__Password=guest
+    env_file:
+      - dev.env
+    volumes:
+      - ./logs:/app/logs
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - app-network
+  
+
+  postgres:
+    image: postgres:16
+    environment:
+      POSTGRES_DB: ${DB_NAME}
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+    ports:
+      - "55433:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    env_file:
+      - dev.env
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - app-network
+
+  rabbitmq:
+    image: rabbitmq:4.0.3-management
+    ports:
+      - "5672:5672"  # AMQP
+      - "15672:15672"  # Management UI (user: guest, pass: guest)
+    volumes:
+      - ./rabbitmq-config/definitions.json:/etc/rabbitmq/definitions.json:ro
+    environment:
+      - RABBITMQ_SERVER_ADDITIONAL_ERL_ARGS=-rabbitmq_management load_definitions "/etc/rabbitmq/definitions.json"
+    healthcheck:
+      test: ["CMD", "rabbitmqctl", "status"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - app-network
+
+  seq:
+    image: datalust/seq:latest
+    environment:
+      ACCEPT_EULA: Y
+      SEQ_FIRSTRUN_ADMINPASSWORD: adminpassword
+    ports:
+      - "5341:80"  # Seq UI
+    volumes:
+      - seq_data:/data
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://seq:80/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - app-network     
+  
+
+volumes:
+  postgres_data:
+  seq_data:
+  logs:
